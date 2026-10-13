@@ -156,5 +156,27 @@ This hexagonal plot shows a strong positive relationship between daily minimum a
 ##### Snowfall plot
 
 (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
-
-
+```{r}
+ny_noaa_clean |>
+  filter(snow > 0, snow < 100) |> 
+  ggplot(aes(x = factor(year), y = snow, fill = factor(year))) +
+  geom_boxplot(
+    alpha = 0.8,
+    width = 0.7,
+    outlier.size = 1
+  ) +
+  labs(
+  title = "Snowfall Over the Years",
+  subtitle = "Snowfall Measured by Weather Stations Between 1981–2010",
+  x = "Year",
+  y = "Snowfall (mm)"
+) +
+theme_minimal() +
+theme(
+  plot.title = element_text(face = "bold", size = 14),
+  legend.position = "none",
+  panel.grid.minor = element_blank(),
+  axis.text.x = element_text(angle = 90, hjust = 1)
+)
+```
+This boxplot shows that the distribution of daily snowfall amounts between 0 and 100 mm was relatively consistent across 1981–2010. The median snowfall was approximately 25 mm in most years, while the middle 50% of observations generally ranged from about 13 to 51 mm. Although some years showed slightly different variability and a few high snowfall outliers, there was no clear overall trend in the median snowfall amount. The similarity across years may partly reflect the concentration of snowfall measurements at common values such as 13, 25, and 51 mm. These results describe snowfall amounts on days with recorded snowfall within the specified range, rather than total annual snowfall.
