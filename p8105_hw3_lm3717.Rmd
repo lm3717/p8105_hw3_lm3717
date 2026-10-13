@@ -74,3 +74,63 @@ ny_noaa_clean |>
 ```
 The most commonly observed snowfall value is 0 mm, which makes sense because snowfall does not occur every day. The next most common values are 25 mm, 13 mm, and 51 mm, which approximately correspond to 1 inch, 0.5 inches, and 2 inches, respectively. This suggests that some snowfall measurements may have originally been recorded in inches and converted to millimeters.
 
+##### January and July temps over the years
+Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
+```{r}
+ny_noaa_clean |> 
+  filter(month %in% c(1, 7)) |> 
+  group_by(year, month, id) |> 
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    .groups = "drop"
+  ) |> 
+  filter(!is.na(mean_tmax)) |> 
+  mutate(
+    month = factor(
+      month, 
+      levels = c(7, 1), 
+      labels = c("July", "January")
+    )
+  ) |> 
+  ggplot(aes(x = year, y = mean_tmax)) +
+  geom_point(
+    aes(color = month),
+    alpha = .25,
+    size = 0.8
+    ) +
+  geom_smooth(
+    aes(color = month),
+    method = "lm",
+    se = FALSE, 
+    linewidth = 0.8
+  ) +
+  facet_grid(month ~ ., scales = "free_y", switch = "y") +
+  scale_color_viridis_d(
+  option = "viridis",
+  begin = 0.15,
+  end = 0.85
+) +
+  labs(
+    title = "Average Max Temperatures in New York",
+    subtitle = "January and July temperatures across weather stations, 1981 - 2010",
+    x = "Year",
+    y = "Average Max Temp (°C)",
+    caption = "Each point represents one station's monthly average",
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 14),
+    strip.placement = "outside",
+    strip.text.y.left = element_text(angle = 0, face = "bold"),
+    strip.text = element_text(face = "bold", size = 11), 
+    panel.grid.minor = element_blank()
+  )
+  
+```
+
+This graph shows clear seasonal differences, as shown with consistently higher averages in July as compared to January. The trendline shows a slight increase in January temps from 1981 to 2010, while July temps remain more or less stable. January temps seem to be more variable than July ones. There are potential outliers in January around 1982 and 2004, and in July around 1988 and 2004.
+
+
+
+
