@@ -1,0 +1,76 @@
+---
+title: "P8105 Homework 3"
+author: "Lina Marcinczyk"
+date: "2026-10-13"
+output: github_document
+---
+```{r setup, include=FALSE}
+library(tidyverse)
+library(leaflet)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+## Problem 1
+### Loading and inspecting NY NOAA dataset
+```{r}
+library(p8105.datasets)
+data("ny_noaa")
+```
+
+The NY NOAA dataset contains `r nrow(ny_noaa)` observations
+and `r ncol(ny_noaa)` variables, representing weather measurements
+collected at different stations over time. The variables include
+station ID (`id`), observation date (`date`), precipitation (`prcp`),
+snowfall (`snow`), snow depth (`snwd`), maximum temperature (`tmax`),
+and minimum temperature (`tmin`). The station ID and temperature
+variables are stored as character values, the date is stored as a
+date variable, and the precipitation and snow measurements are
+stored as integers.
+
+The dataset contains `r sum(is.na(ny_noaa))` missing values overall.
+Maximum temperature (`tmax`) has `r sum(is.na(ny_noaa$tmax))`
+missing observations (`r round(mean(is.na(ny_noaa$tmax)) * 100, 1)`%),
+while minimum temperature (`tmin`) has
+`r sum(is.na(ny_noaa$tmin))` missing observations
+(`r round(mean(is.na(ny_noaa$tmin)) * 100, 1)`%).
+In contrast, station ID and date have no missing values.
+
+### Cleaning the dataset
+
+```{r}
+ny_noaa_clean = ny_noaa |> 
+  mutate(
+    year = year(date), 
+    month = month(date),
+    day = day(date), 
+    prcp = prcp / 10, 
+    tmax = as.numeric(tmax) / 10, 
+    tmin = as.numeric(tmin) / 10
+  )
+```
+
+##### Snowfall Observations
+```{r}
+ny_noaa_clean |> 
+  filter(!is.na(snow)) |> 
+  count(snow) |> 
+  arrange(desc(n)) |> 
+  slice_head(n =10)
+```
+The most commonly observed snowfall value is 0 mm, which makes sense because snowfall does not occur every day. The next most common values are 25 mm, 13 mm, and 51 mm, which approximately correspond to 1 inch, 0.5 inches, and 2 inches, respectively. This suggests that some snowfall measurements may have originally been recorded in inches and converted to millimeters.
+
