@@ -64,7 +64,7 @@ ny_noaa_clean = ny_noaa |>
   )
 ```
 
-##### Snowfall Observations
+#### Snowfall Observations
 ```{r}
 ny_noaa_clean |> 
   filter(!is.na(snow)) |> 
@@ -74,7 +74,7 @@ ny_noaa_clean |>
 ```
 The most commonly observed snowfall value is 0 mm, which makes sense because snowfall does not occur every day. The next most common values are 25 mm, 13 mm, and 51 mm, which approximately correspond to 1 inch, 0.5 inches, and 2 inches, respectively. This suggests that some snowfall measurements may have originally been recorded in inches and converted to millimeters.
 
-##### January and July temps over the years
+#### January and July temps over the years
 
 ```{r}
 ny_noaa_clean |> 
@@ -130,7 +130,7 @@ ny_noaa_clean |>
 
 This graph shows clear seasonal differences, as shown with consistently higher averages in July as compared to January. The trendline shows a slight increase in January temps from 1981 to 2010, while July temps remain more or less stable. January temps seem to be more variable than July ones. There are potential outliers in January around 1982 and 2004, and in July around 1988 and 2004.
 
-##### Tmax vs Tmin plot
+#### Tmax vs Tmin plot
 
 ```{r}
 ny_noaa_clean |>
@@ -153,7 +153,7 @@ theme(
 ```
 This hexagonal plot shows a strong positive relationship between daily minimum and maximum temperatures across New York weather stations. The highest concentration of observations occurs at the more moderate temperatures, with minimum temperatures around 0–20°C and maximum temperatures around 5–30°C. Some extreme observations are seen, both unusually high and low temperatures, which may suggest outliers or other data-quality issues.
 
-##### Snowfall plot
+#### Snowfall plot
 
 (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
 ```{r}
@@ -306,9 +306,56 @@ nhanes_df |>
 ```
 These plots show that total daily activity generally decreased with age across all three education categories for both men and women. The steepest decline was observed among participants with less than a high school education, while those with more than a high school education showed a more gradual decline. Among participants with a high school education or higher, women generally had higher predicted activity levels than men across the age range. Despite these patterns, there is variability in activity levels within each education category, and we can't really predict anything about age, sex, and education in relation to daily activity.
 
+#### Activity, Education, and Sex
+```{r}
+nhanes_long_df = nhanes_df |> 
+  pivot_longer(
+    cols = min1:min1440, 
+    names_to = "minute",
+    names_prefix = "min",
+    names_transform = list(minute = as.integer),
+    values_to = "activity"    
+  ) |> 
+  group_by(education, sex, minute) |> 
+  summarise(
+    mean_activity = mean(activity, na.rm = TRUE),
+    .groups = "drop"
+  ) 
+
+nhanes_long_df |> 
+  ggplot(aes(
+    x = minute / 60, 
+    y = mean_activity, 
+    color = sex
+    )) +
+  geom_smooth(
+    method = "loess",
+    span = 0.1,
+    se = FALSE,
+    linewiddth = 0.7
+  ) + 
+  facet_wrap(~ education, nrow = 1) +
+  scale_x_continuous(breaks = seq(0, 24, 4)) +
+  scale_color_viridis_d(
+    begin = 0.15,
+    end = 0.75
+  ) +
+  labs(
+    title = "24-Hour Activity Patterns by Sex and Education Level",
+    x = "Time of Day (Hours)",
+    y = "Mean Activity (MIMS)",
+    color = "Sex"
+) + 
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14), 
+    strip.text = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
+```
+Across all education levels, activity was lowest during the early morning hours, increased sharply after 6 AM, and declined in the evening. Men and women showed similar daily patterns, although women generally had higher daytime activity levels, particularly among participants with a high school education or higher. Participants with less than a high school education had the highest midday activity peaks. Overall, activity patterns were similar across education levels, with some differences by sex.
 
 
-Accelerometer data allows the inspection activity over the course of the day. Make a three-panel plot that shows the 24-hour activity time courses for each education level and use color to indicate sex. Describe in words any patterns or conclusions you can make based on this graph; including smooth trends may help identify differences.
 
 
 
