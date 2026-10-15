@@ -106,7 +106,7 @@ ny_noaa_clean |>
   facet_grid(month ~ ., scales = "free_y", switch = "y") +
   scale_color_viridis_d(
   option = "viridis",
-  begin = 0.15,
+  begin = 0.25,
   end = 0.85
 ) +
   labs(
@@ -241,8 +241,8 @@ nhanes_df |>
   ggplot(aes(x = education, y = age, fill = sex)) +
   geom_boxplot() +
   scale_fill_viridis_d(
-  begin = 0.45,
-  end = 0.88
+  begin = 0.25,
+  end = 0.85
 ) +
   labs(
     title = "Age Distribution by Sex and Education Level",
@@ -285,8 +285,8 @@ nhanes_df |>
   ) +
   facet_wrap(~ education, nrow = 1) +
   scale_color_viridis_d(
-  begin = 0.15,
-  end = 0.89
+  begin = 0.25,
+  end = 0.85
 ) +
   labs(
     title = "Total Daily Activity by Age, Sex and Education Level",
@@ -336,8 +336,8 @@ nhanes_long_df |>
   facet_wrap(~ education, nrow = 1) +
   scale_x_continuous(breaks = seq(0, 24, 4)) +
   scale_color_viridis_d(
-    begin = 0.15,
-    end = 0.75
+    begin = 0.25,
+    end = 0.85
   ) +
   labs(
     title = "24-Hour Activity Patterns by Sex and Education Level",
@@ -412,12 +412,76 @@ citibike_df |>
 Pier 61 at Chelsea Piers was the most popular starting station, with 163 rides, followed by University Pl & E 14 St with 155 rides. The remaining three stations had similarly high ride counts.
 
 #### Ride Duration by Month, Year, and Day of the Week
+```{r}
+citibike_df |> 
+  mutate(
+  weekdays = factor(
+    weekdays,
+    levels = c(
+      "Monday", "Tuesday", "Wednesday", "Thursday",
+      "Friday", "Saturday", "Sunday"
+    ))) |>
+  group_by(weekdays, month, year) |> 
+  summarise(
+    median_ride = median(duration),
+    .groups = "drop"
+  ) |> 
+  ggplot(aes(x = weekdays, y = median_ride, color = month)) +
+  geom_line(aes(group = month), linewidth = 0.8) +
+  geom_point(size = 2.5) + 
+  scale_color_viridis_d(
+  begin = 0.25,
+  end = 0.85
+  ) +
+  facet_grid(~ year) +
+    labs(
+  title = "Median Citi Bike Ride Duration by Weekday",
+  x = "Day of the Week",
+  y = "Median Ride Duration (min)",
+  color = "Month"
+) +
+theme_minimal() +
+theme(
+  plot.title = element_text(face = "bold", size = 14),
+  strip.text = element_text(face = "bold"),
+  axis.text.x = element_text(angle = 45, hjust = 1),
+  legend.position = "bottom"
+)
+```
+Median Citi Bike ride durations were consistently higher in July than in January for both 2020 and 2024. Rides were often longer on weekends, particularly in July 2020, when median durations peaked on Saturday and Sunday. Median ride durations were also much higher in 2020 than in 2024, especially in July, which I would assume resulted from peak Covid when riders likely preferred biking to taking the subway.
 
-
-Make a plot to investigate the effects of day of the week, month, and year on median ride duration. This plot can include one or more panels, but should facilitate comparison across all variables of interest. Comment on your observations from this plot.
-
-There were relatively few electric Citi Bikes in 2020, but many more are available now. For data in 2024, make a figure that shows the impact of month, membership status, and bike type on the distribution of ride duration. Comment on your results.
-
+#### E-bikes in 2024
+```{r}
+citibike_df |> 
+  filter(year == 2024) |> 
+  ggplot(aes(x = rideable_type, y = duration, fill = member_casual)) +
+  geom_boxplot() +
+  facet_grid(~ month) +
+  scale_fill_viridis_d(
+  begin = 0.25,
+  end = 0.85
+) +
+  coord_cartesian(ylim = c(0, 60)) +
+labs(
+  title = "Citi Bike Ride Duration by Bike Type and Membership Status",
+  subtitle = "January and July 2024",
+  x = "Bike Type",
+  y = "Ride Duration (Minutes)",
+  fill = "Membership Status"
+) +
+  scale_x_discrete(
+  labels = c(
+    classic_bike = "Classic Bike",
+    electric_bike = "Electric Bike"
+  )) +
+theme_minimal() +
+theme(
+  plot.title = element_text(face = "bold", size = 14),
+  strip.text = element_text(face = "bold"),
+  legend.position = "bottom"
+)
+```
+In both January and July 2024, non-members generally had longer ride durations and greater variability than Citi Bike members. Classic bike rides tended to last longer than electric bike rides, especially for casual riders. Ride durations were also generally higher in July than in January, suggesting seasonal differences in bike usage. Overall, membership status appears to be associated with the largest differences in ride duration.
 
 
 
